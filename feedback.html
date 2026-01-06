@@ -53,7 +53,9 @@ body {
     font-family: 'Roboto', sans-serif;
     min-height: 100vh;
     position: relative;
-    overflow-x: hidden;
+    /* FIX 1: Prevent horizontal scroll/bounce */
+    overflow-x: hidden; 
+    width: 100%;
 }
 
 /* Animated Science Grid Background */
@@ -80,25 +82,26 @@ body::before {
     50% { opacity: 1; }
 }
 
-/* DNA Helix Animation */
 body::after {
     content: '';
     position: fixed;
     top: -50%;
     right: -10%;
-    width: 600px;
+    /* FIX 2: Reduce width on mobile or use a more stable scale */
+    width: 300px; 
     height: 200%;
-    background: 
-        repeating-linear-gradient(
-            90deg,
-            transparent,
-            transparent 50px,
-            rgba(6, 255, 165, 0.03) 50px,
-            rgba(6, 255, 165, 0.03) 52px
-        );
+    background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 50px,
+        rgba(6, 255, 165, 0.03) 50px,
+        rgba(6, 255, 165, 0.03) 52px
+    );
     transform: rotate(-15deg);
     pointer-events: none;
     z-index: 0;
+    /* FIX 3: Ensure animation doesn't trigger layout shifts */
+    will-change: transform;
     animation: dnaScroll 20s linear infinite;
 }
 
@@ -872,6 +875,7 @@ missionForm.onsubmit = async (e) => {
 </body>
 
 </html>
+
 
 
 
