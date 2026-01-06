@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S2T 2026 | Feedback Terminal</title>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --electric-yellow: #ffd60a;
+    --neon-green: #06ffa5;
+    --deep-green: #00cc88;
+    --science-blue: #0077ff;
+    --dark-bg: #001a0f;
+    --card-bg: #002817;
+    --glass: rgba(0, 40, 23, 0.85);
+    --border-glow: rgba(6, 255, 165, 0.3);
+    --text-light: #e0ffe8;
+    --yellow-glow: rgba(255, 214, 10, 0.4);
+}
+#grade,#event{
+    color: white;
+    background-color:rgba(0, 40, 23, 0.85);
+    position: relative;
+  font-family: Arial, sans-serif;
+}
+#grade select{
+    appearance: none; /* Removes default browser styling */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+    width: 100%;
+  padding: 10px 15px;
+  font-size: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: radial-gradient(circle at top, #001a0f 0%, #000a05 100%);
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Animated Science Grid Background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(6, 255, 165, 0.05) 2px, transparent 2px),
+        linear-gradient(90deg, rgba(6, 255, 165, 0.05) 2px, transparent 2px),
+        linear-gradient(rgba(255, 214, 10, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 214, 10, 0.03) 1px, transparent 1px);
+    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+    pointer-events: none;
+    z-index: 0;
+    animation: gridPulse 4s ease-in-out infinite;
+}
+
+@keyframes gridPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* DNA Helix Animation */
+body::after {
+    content: '';
+    position: fixed;
+    top: -50%;
+    right: -10%;
+    width: 600px;
+    height: 200%;
+    background: 
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 50px,
+            rgba(6, 255, 165, 0.03) 50px,
+            rgba(6, 255, 165, 0.03) 52px
+        );
+    transform: rotate(-15deg);
+    pointer-events: none;
+    z-index: 0;
+    animation: dnaScroll 20s linear infinite;
+}
+
+@keyframes dnaScroll {
+    from { transform: rotate(-15deg) translateY(0); }
+    to { transform: rotate(-15deg) translateY(100px); }
+}
+
+header {
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 26, 15, 0.95);
+    border-bottom: 3px solid var(--neon-green);
+    box-shadow: 0 10px 40px rgba(6, 255, 165, 0.2);
+    position: relative;
+    z-index: 10;
+}
+
+header::before {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--electric-yellow), var(--neon-green), transparent);
+    animation: energyFlow 3s linear infinite;
+}
+
+@keyframes energyFlow {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.mission-tag {
+    background: linear-gradient(135deg, var(--electric-yellow), var(--neon-green));
+    font-family: 'Oswald', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+    padding: 8px 24px;
+    color: #001a0f;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px var(--yellow-glow);
+    position: relative;
+    overflow: hidden;
+}
+
+.mission-tag::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: tagShimmer 2s infinite;
+}
+
+@keyframes tagShimmer {
+    0% { left: -100%; }
+    100% { left: 200%; }
+}
+
+#status {
+    color: var(--neon-green);
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--neon-green);
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+main {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 30px;
+    padding: 40px;
+    max-width: 1600px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+.panel {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    border: 2px solid var(--border-glow);
+    border-radius: 20px;
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.panel::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--electric-yellow), transparent);
+    border-radius: 20px 0 0 0;
+    opacity: 0.3;
+}
+
+.panel::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, transparent, var(--neon-green));
+    border-radius: 0 0 20px 0;
+    opacity: 0.3;
+}
+
+h2 {
+    font-family: 'Oswald', sans-serif;
+    color: var(--electric-yellow);
+    letter-spacing: 3px;
+    font-size: 18px;
+    font-weight: 700;
+    border-left: 4px solid var(--neon-green);
+    padding-left: 15px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 15px var(--yellow-glow);
+    text-transform: uppercase;
+}
+
+label {
+    font-size: 11px;
+    color: var(--neon-green);
+    margin-top: 15px;
+    display: block;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+input, select, textarea {
+    width: 100%;
+    background: rgba(6, 255, 165, 0.05);
+    border: 2px solid rgba(6, 255, 165, 0.2);
+    padding: 12px 15px;
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    border-radius: 8px;
+    margin-top: 5px;
+    transition: all 0.3s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--neon-green);
+    background: rgba(6, 255, 165, 0.1);
+    box-shadow: 0 0 20px rgba(6, 255, 165, 0.2);
+}
+
+textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.target-hex {
+    aspect-ratio: 1;
+    background: rgba(0, 0, 0, 0.5);
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    border: 2px solid transparent;
+}
+
+.target-hex::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--neon-green), var(--electric-yellow));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+
+.target-hex:hover::before {
+    opacity: 0.2;
+}
+
+.target-hex img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.4;
+    transition: all 0.3s ease;
+}
+
+.target-hex:hover img {
+    opacity: 0.6;
+}
+
+.target-hex.selected {
+    transform: scale(1.05);
+}
+
+.target-hex.selected img {
+    opacity: 1;
+    filter: drop-shadow(0 0 15px var(--electric-yellow));
+}
+
+.target-hex.selected::before {
+    opacity: 0.5;
+}
+
+.rate-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    margin-top: 10px;
+    background: rgba(6, 255, 165, 0.05);
+    border-radius: 8px;
+    border-left: 3px solid var(--neon-green);
+    transition: all 0.3s ease;
+}
+
+.rate-row:hover {
+    background: rgba(6, 255, 165, 0.1);
+    border-left-color: var(--electric-yellow);
+}
+
+.rate-row span:first-child {
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.emojis {
+    display: flex;
+    gap: 8px;
+}
+
+.emojis span {
+    cursor: pointer;
+    opacity: 0.3;
+    font-size: 24px;
+    transition: all 0.3s ease;
+}
+
+.emojis span:hover {
+    opacity: 0.6;
+    transform: scale(1.1);
+}
+
+.emojis span.active {
+    opacity: 1;
+    transform: scale(1.3);
+    filter: drop-shadow(0 0 10px var(--electric-yellow));
+}
+
+.btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--electric-yellow), var(--neon-green));
+    border: none;
+    color: #001a0f;
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 20px;
+    cursor: pointer;
+    border-radius: 50px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 40px var(--yellow-glow);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 50px rgba(6, 255, 165, 0.6);
+}
+
+.btn:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+canvas {
+    border: 3px solid var(--neon-green);
+    border-radius: 12px;
+    max-width: 100%;
+    box-shadow: 0 20px 60px rgba(6, 255, 165, 0.3);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.loading-shimmer {
+    background: linear-gradient(90deg, 
+        rgba(6, 255, 165, 0.1) 25%, 
+        rgba(255, 214, 10, 0.2) 50%, 
+        rgba(6, 255, 165, 0.1) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+#thankYouScreen {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 10, 5, 0.98);
+    z-index: 1000;
+    text-align: center;
+    padding: 50px 20px;
+    overflow-y: auto;
+}
+
+#thankYouScreen h1 {
+    color: var(--electric-yellow);
+    font-family: 'Oswald', sans-serif;
+    font-size: 48px;
+    font-weight: 900;
+    margin-bottom: 15px;
+    text-shadow: 0 0 30px var(--yellow-glow);
+    animation: celebrationPulse 2s ease-in-out infinite;
+}
+
+@keyframes celebrationPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+#thankYouScreen p {
+    color: var(--neon-green);
+    font-size: 20px;
+    margin-bottom: 30px;
+    font-weight: 500;
+}
+
+.button-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 600px;
+    margin: 0 auto 30px;
+}
+
+.button-group .btn {
+    flex: 1;
+    min-width: 200px;
+}
+
+#thankYouPreview {
+    border: 3px solid var(--electric-yellow);
+    border-radius: 12px;
+    max-width: 100%;
+    box-shadow: 0 20px 60px rgba(255, 214, 10, 0.4);
+    margin-bottom: 30px;
+}
+
+@media (max-width: 1200px) {
+    main {
+        grid-template-columns: 1fr;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px 20px;
+    }
+    
+    .mission-tag {
+        font-size: 18px;
+        padding: 6px 16px;
+    }
+    
+    h2 {
+        font-size: 16px;
+    }
+    
+    .photo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 10px;
+    }
+    
+    #thankYouScreen h1 {
+        font-size: 32px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .button-group .btn {
+        width: 100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="mission-tag"> S2T FEEDBACK TERMINAL</div>
+    <div id="status">>> SYSTEM_READY</div>
+</header>
+
+<main>
+
+<section class="panel">
+    <h2>🎯 Personnel Input</h2>
+
+    <form id="missionForm">
+        <label>Mission Category</label>
+        <select id="event" required onchange="fetchDrive(this.value);drawPoster()">
+            <option value="">SELECT EVENT...</option>
+            <option>Junior Scientist</option>
+            <option>Senior Scientist</option>
+            <option>Photography</option>
+            <option>English Essay Writing</option>
+            <option>Tamil Essay Writing</option>
+            <option>Podcast</option>
+            <option>Scouts Activities</option>
+            <option>SDG Treasure Hunt</option>
+            <option>Rise Above</option>
+        </select>
+
+        <label>NAME</label>
+        <input id="name" required oninput="drawPoster()" placeholder="Enter your name">
+
+        <label>SCHOOL NAME</label>
+        <input id="school" required oninput="drawPoster()" placeholder="Enter your school">
+
+        <label>CLASS</label>
+        <select id="grade" required onchange="drawPoster()">
+            <option value="">SELECT...</option>
+            <option>8</option>
+            <option>9</option>
+            <option>10</option>
+            <option>11</option>
+            <option>12</option>
+        </select>
+
+        <h2 style="margin-top:30px">SELECT YOUR PHOTO FROM THE LIST</h2>
+        <div id="photoGrid" class="photo-grid"></div>
+
+        <h2 style="margin-top:30px">YOUR RATINS</h2>
+        <div id="ratingsBody"></div>
+
+        <label>BEST PART OF THE EVENT</label>
+        <textarea id="best" placeholder="What did you enjoy most?"></textarea>
+
+        <label>ANY IMPROVEMENTS</label>
+        <textarea id="improve" placeholder="How can we make it better?"></textarea>
+
+        <button class="btn" type="submit">🚀 Generate Poster</button>
+    </form>
+</section>
+
+<section class="panel">
+    <h2> Poster Preview</h2>
+    <canvas id="poster" width="1080" height="1350"></canvas>
+</section>
+
+</main>
+
+<!-- Success Screen -->
+<div id="thankYouScreen">
+    <h1>🎉 MISSION COMPLETE</h1>
+    <p>Here is your generated poster</p>
+    
+    <div style="max-width:500px; margin:0 auto 30px;">
+        <canvas id="thankYouPreview" width="500" height="625"></canvas>
+    </div>
+    
+    <div class="button-group">
+        <button onclick="editForm()" class="btn" style="background:#444;">✏️ Re-Edit</button>
+        <button onclick="shareMission()" class="btn" style="background:#25D366;">📡 Share Mission</button>
+    </div>
+    
+    <div class="button-group">
+        <a id="downloadLink" class="btn" style="background:var(--electric-yellow); color:#001a0f; text-decoration:none;" download>⬇️ Download Poster</a>
+        <a href="index.html" class="btn" style="background:var(--science-blue);">🏠 Return Home</a>
+    </div>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbyQaLT_m1EvP8lXbXpNDK_wiyg1YOMoWL6-jdZkeqyaXplwHkO043W3upG4PlmN7hk4eQ/exec";
+
+const canvas = document.getElementById("poster");
+const ctx = canvas.getContext("2d");
+const statusEl = document.getElementById("status");
+
+let template = new Image();
+let templateLoaded = false;
+let selectedPhoto = null;
+let previewPhoto = null;
+
+const POSTER_W = 1080;
+const POSTER_H = 1350;
+const PHOTO_BOX = { x: 87.5, y: 513, w: 912.1, h: 578.8 };
+const SCHOOL_BOX = { x: 150, y: 392.9, w: 801.8, h: 98.1 };
+
+template.onload = () => {
+    templateLoaded = true;
+    drawPoster();
+};
+template.src = "poster-template.png";
+
+function editForm() {
+    document.getElementById("thankYouScreen").style.display = "none";
+    statusEl.innerText = ">> SYSTEM_READY (RE-EDIT_MODE)";
+}
+
+async function shareMission() {
+    const canvas = document.getElementById("poster");
+    canvas.toBlob(async (blob) => {
+        const file = new File([blob], "S2T_Mission_Poster.jpg", { type: "image/jpeg" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({
+                    files: [file],
+                    title: 'S2T 2026 | Mission Accomplished',
+                    text: 'Check out my Mission Poster from S2T 2026!',
+                });
+            } catch (err) {
+                console.log("Share failed:", err);
+            }
+        } else {
+            alert("Sharing not supported on this browser. Please use the Download button!");
+        }
+    }, "image/jpeg", 0.9);
+}
+
+function drawPoster() {
+    const photoToDraw = selectedPhoto || previewPhoto;
+    if (!templateLoaded) return;
+
+    ctx.clearRect(0, 0, POSTER_W, POSTER_H);
+    ctx.drawImage(template, 0, 0, POSTER_W, POSTER_H);
+
+    if (photoToDraw && photoToDraw.naturalWidth) {
+        const { x, y, w, h } = PHOTO_BOX;
+        ctx.save();
+        
+        ctx.beginPath();
+        const r = 24; 
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+        ctx.clip();
+
+        const scale = Math.max(w / photoToDraw.naturalWidth, h / photoToDraw.naturalHeight);
+        const dw = photoToDraw.naturalWidth * scale;
+        const dh = photoToDraw.naturalHeight * scale;
+
+        ctx.drawImage(photoToDraw, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+        ctx.restore();
+    } else if (statusEl && statusEl.innerText.includes("OPTIMIZING")) {
+        ctx.fillStyle = "rgba(0, 20, 40, 0.8)";
+        ctx.fillRect(PHOTO_BOX.x, PHOTO_BOX.y, PHOTO_BOX.w, PHOTO_BOX.h);
+        
+        const scanY = PHOTO_BOX.y + (Date.now() % 2000 / 2000) * PHOTO_BOX.h;
+        ctx.strokeStyle = "#06ffa5";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(PHOTO_BOX.x, scanY);
+        ctx.lineTo(PHOTO_BOX.x + PHOTO_BOX.w, scanY);
+        ctx.stroke();
+
+        ctx.fillStyle = "#06ffa5";
+        ctx.font = "24px 'Oswald'";
+        ctx.textAlign = "center";
+        ctx.fillText("DECRYPTING PIXELS...", PHOTO_BOX.x + PHOTO_BOX.w/2, PHOTO_BOX.y + PHOTO_BOX.h/2);
+        
+        requestAnimationFrame(drawPoster);
+    }
+
+    const schoolVal = document.getElementById("school") ? document.getElementById("school").value : "";
+    drawAutoFitText(
+        (schoolVal || "SCHOOL NAME").toUpperCase(),
+        SCHOOL_BOX.x + SCHOOL_BOX.w / 2,
+        SCHOOL_BOX.y + SCHOOL_BOX.h / 2 + 12, 
+        SCHOOL_BOX.w, 44, 22, "Oswald", "#111827"
+    );
+
+    const nameVal = document.getElementById("name") ? document.getElementById("name").value : "";
+    drawAutoFitText(
+        (nameVal || "AGENT NAME").toUpperCase(),
+        540, 1150, 800, 48, 24, "Oswald", "#111827"
+    );
+}
+
+function drawAutoFitText(text, x, y, maxWidth, maxFontSize, minFontSize, fontFamily, color) {
+    let fontSize = maxFontSize;
+    do {
+        ctx.font = `bold ${fontSize}px ${fontFamily}`;
+        if (ctx.measureText(text).width <= maxWidth) break;
+        fontSize--;
+    } while (fontSize >= minFontSize);
+    ctx.fillStyle = color;
+    ctx.textAlign = "center";
+    ctx.fillText(text, x, y);
+}
+
+async function fetchDrive(mission) {
+    const photoGrid = document.getElementById("photoGrid");
+    photoGrid.innerHTML = "<div style='color:var(--neon-green);padding:20px;text-align:center;font-family:Oswald;'>⚡ SCANNING DATABASE...</div>";
+
+    try {
+        const r = await fetch(`${API_URL}?mission=${encodeURIComponent(mission)}`);
+        const data = await r.json();
+        photoGrid.innerHTML = "";
+
+        data.forEach(img => {
+            const box = document.createElement("div");
+            box.className = "target-hex";
+            const thumbImg = document.createElement("img");
+            thumbImg.src = img.thumbnail; 
+            box.appendChild(thumbImg);
+            
+            box.onclick = async () => {
+                document.querySelectorAll(".target-hex").forEach(x => x.classList.remove("selected"));
+                box.classList.add("selected");
+                
+                const imgObject = new Image();
+                imgObject.crossOrigin = "anonymous"; 
+                statusEl.innerText = ">> OPTIMIZING_RESOLUTION...";
+
+                try {
+                    const response = await fetch(`${API_URL}?base64id=${img.id}`);
+                    let base64Data = await response.text();
+                    base64Data = base64Data.trim().replace(/^"|"$/g, '');
+
+                    imgObject.onload = () => {
+                        selectedPhoto = imgObject; 
+                        previewPhoto = null; 
+                        drawPoster();              
+                        statusEl.innerText = ">> TARGET_READY ✓";
+                    };
+                    
+                    imgObject.src = base64Data;
+                } catch (err) {
+                    statusEl.innerText = ">> SECURITY_ERR";
+                }
+            };
+            
+            photoGrid.appendChild(box);
+        });
+    } catch (err) {
+        photoGrid.innerHTML = "<div style='color:var(--electric-yellow);padding:20px;text-align:center;'>⚠️ CONNECTION OFFLINE</div>";
+    }
+}
+
+["Experience","Venue","Timing","Staff","Food","Learning","Overall"].forEach(m => {
+    document.getElementById("ratingsBody").innerHTML += `
+        <div class="rate-row">
+            <span>${m}</span>
+            <div class="emojis">
+                <span onclick="rate(this)">😡</span>
+                <span onclick="rate(this)">😐</span>
+                <span class="active" onclick="rate(this)">😊</span>
+                <span onclick="rate(this)">🤩</span>
+            </div>
+        </div>`;
+});
+
+function rate(el) {
+    el.parentElement.querySelectorAll("span").forEach(s => s.classList.remove("active"));
+    el.classList.add("active");
+}
+
+missionForm.onsubmit = async (e) => {
+    e.preventDefault();
+
+    if (!selectedPhoto) {
+        alert("⚠️ Please wait for HIGH-RES optimization to finish (TARGET_READY) before generating!");
+        return;
+    }
+
+    previewPhoto = null;
+    drawPoster();
+
+    const posterData = canvas.toDataURL("image/jpeg", 0.8);
+    statusEl.innerText = ">> UPLOADING TO MISSION CONTROL...";
+
+    const ratings = Array.from(document.querySelectorAll('.rate-row'))
+        .map(row => `${row.querySelector('span').innerText}: ${row.querySelector('.active').innerText}`)
+        .join(' | ');
+
+    const payload = {
+        name: document.getElementById("name").value,
+        school: document.getElementById("school").value,
+        grade: document.getElementById("grade").value,
+        event: document.getElementById("event").value,
+        best: document.getElementById("best").value,
+        improve: document.getElementById("improve").value,
+        ratings: ratings,
+        poster: posterData
+    };
+
+    document.getElementById("thankYouScreen").style.display = "block";
+    const tyCtx = document.getElementById("thankYouPreview").getContext("2d");
+    tyCtx.drawImage(canvas, 0, 0, 500, 625);
+    document.getElementById("downloadLink").href = posterData;
+
+    fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+    }).then(() => {
+        statusEl.innerText = ">> MISSION_ACCOMPLISHED ✓";
+    }).catch((err) => {
+        console.error("Upload error:", err);
+        statusEl.innerText = ">> UPLOAD_FAILED - RETRY";
+    });
+};
+</script>
+
+</body>
+</html>
