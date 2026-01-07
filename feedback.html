@@ -355,6 +355,16 @@ textarea {
   transform: translateY(-2px); /* Slight lift on hover */
 }
 
+/* Label Styling
+.rate-row span:first-child {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #e2e8f0;
+  font-size: 14px;
+  text-transform: uppercase;
+} */
+
 /* Emoji Group */
 .emojis {
   display: flex;
@@ -522,6 +532,10 @@ canvas {
     width: 100%;
   }
 }
+@keyframes scan {
+    0% { top: 0; }
+    100% { top: 100%; }
+}
 </style>
 </head>
 
@@ -568,8 +582,32 @@ canvas {
             <option>11</option>
             <option>12</option>
         </select>
-        <h2 style="margin-top:30px">SELECT YOUR PHOTO FROM THE LIST</h2>
-        <div id="photoGrid" class="photo-grid"></div>
+<h2 style="margin-top:30px">📸 Add Photos (Up to 4)</h2>
+<div class="button-group" style="margin-bottom: 15px;">
+    <button type="button" class="btn" style="background: #555; flex: 1;" onclick="document.getElementById('galleryInput').click()">📁 Gallery</button>
+    
+    <button type="button" class="btn" style="background: #555; flex: 1;" onclick="openCamera()">🤳 Live Camera</button>
+    
+    <input type="file" id="galleryInput" accept="image/*" multiple hidden onchange="handleFileUpload(event)">
+</div>
+
+<div id="cameraModal" style="display:none; position:fixed; inset:0; background:rgba(2, 6, 23, 0.98); z-index:2000; flex-direction:column; align-items:center; justify-content:center; padding:20px; backdrop-filter: blur(10px);">
+    <h2 style="color:var(--neon-green); margin-bottom:15px; font-family:'Oswald';">🤳 LIVE MISSION CAPTURE</h2>
+    
+    <div style="position:relative; width:100%; max-width:500px;">
+        <video id="webcam" autoplay playsinline style="width:100%; border:2px solid var(--neon-green); border-radius:20px; transform: scaleX(-1); box-shadow: 0 0 30px rgba(50, 245, 160, 0.3);"></video>
+        <div style="position:absolute; top:0; left:0; width:100%; height:2px; background:var(--neon-green); opacity:0.5; animation: scan 3s linear infinite;"></div>
+    </div>
+    
+    <canvas id="captureCanvas" style="display:none;"></canvas>
+    
+    <div class="button-group" style="margin-top:25px; width:100%; max-width:500px; display:flex; gap:15px;">
+        <button type="button" class="btn" onclick="takeSnapshot()" style="background:var(--neon-green); flex:2;">📸 CAPTURE PHOTO</button>
+        <button type="button" class="btn" onclick="closeCamera()" style="background:#ff4444; flex:1;">✕ EXIT</button>
+    </div>
+</div>
+<div id="photoGrid" class="photo-grid">
+    </div>
              <h2 style="margin-top:30px">📸 Selected Targets (<span id="count">0</span>/4)</h2>
 <div id="selectionQueue" class="photo-grid" style="min-height: 100px; border: 2px dashed rgba(50, 245, 160, 0.3); padding: 10px; border-radius: 18px;">
     </div>
@@ -714,45 +752,78 @@ function updateSelectionUI() {
         selectionQueue.appendChild(box);
     });
 }
+// --- NEW: Handle Gallery & Camera Uploads ---
+function handleFileUpload(event) {
+    const files = event.target.files;
+    if (!files) return;
+
+    // Check if we already hit the limit
+    if (selectedMetaData.length + files.length > MAX_PHOTOS) {
+        alert(`You can only select a total of ${MAX_PHOTOS} photos.`);
+        return;
+    }
+
+    Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            // Create a "mock" metadata object to fit your existing logic
+            const localImg = {
+                id: "local_" + Date.now() + Math.random(),
+                thumbnail: e.target.result, // Use the base64 as thumbnail
+                isLocal: true,
+                fullData: e.target.result // Store the full data here
+            };
+            
+            selectedMetaData.push(localImg);
+            updateSelectionUI();
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// --- UPDATED: Load & Process Collage ---
+// Replace your existing document.getElementById("loadCollageBtn").onclick with this:
 document.getElementById("loadCollageBtn").onclick = async () => {
     if (selectedMetaData.length === 0) {
-        alert("⚠️ Please select at least 1 photo!");
+        alert("⚠️ Please select or upload at least 1 photo!");
         return;
     }
 
     const btn = document.getElementById("loadCollageBtn");
-    btn.disabled = true; // Prevent double-clicks
+    btn.disabled = true;
     btn.innerHTML = "⚡ DECRYPTING...";
-    statusEl.innerText = ">> SYNCING TARGETS IN PARALLEL...";
+    statusEl.innerText = ">> SYNCING TARGETS...";
     
     highResImages = []; 
 
     try {
-        // Create an array of fetch requests to run SIMULTANEOUSLY
         const fetchPromises = selectedMetaData.map(async (meta, index) => {
-            const response = await fetch(`${API_URL}?base64id=${meta.id}`);
-            let base64Data = (await response.text()).trim().replace(/^"|"$/g, '');
+            let base64Data;
+            
+            if (meta.isLocal) {
+                // Use the already loaded local data
+                base64Data = meta.fullData;
+            } else {
+                // Fetch from Drive API as before
+                const response = await fetch(`${API_URL}?base64id=${meta.id}`);
+                base64Data = (await response.text()).trim().replace(/^"|"$/g, '');
+            }
 
             return new Promise((resolve, reject) => {
                 const img = new Image();
                 img.crossOrigin = "anonymous";
-                img.onload = () => {
-                    console.log(`Target ${index + 1} Ready`);
-                    resolve(img);
-                };
+                img.onload = () => resolve(img);
                 img.onerror = () => reject(`Failed to load image ${index + 1}`);
                 img.src = base64Data;
             });
         });
 
-        // Wait for all 4 images to arrive at once
         highResImages = await Promise.all(fetchPromises);
-        
         statusEl.innerText = ">> ALL TARGETS OPTIMIZED ✓";
         drawPoster();
     } catch (err) {
         console.error(err);
-        statusEl.innerText = ">> ERROR: CONNECTION TIMEOUT";
+        statusEl.innerText = ">> ERROR: LOADING FAILED";
     } finally {
         btn.disabled = false;
         btn.innerHTML = "⚡ Load & Process Collage";
@@ -855,7 +926,65 @@ function drawAutoFitText(text, x, y, maxWidth, maxFontSize, minFontSize, fontFam
             </div>
         </div>`;
 });
+let cameraStream = null;
+const videoElement = document.getElementById('webcam');
+const cameraModalElement = document.getElementById('cameraModal');
 
+// 1. Start the Camera Stream
+async function openCamera() {
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } }, 
+            audio: false 
+        });
+        videoElement.srcObject = cameraStream;
+        cameraModalElement.style.display = 'flex';
+        statusEl.innerText = ">> CAMERA_ONLINE";
+    } catch (err) {
+        alert("Camera Error: Please ensure you are on HTTPS and have granted permissions.");
+        console.error(err);
+    }
+}
+
+// 2. Capture Frame and Save to Selection
+function takeSnapshot() {
+    const canvasCap = document.getElementById('captureCanvas');
+    const ctxCap = canvasCap.getContext('2d');
+    
+    // Set internal canvas resolution to match video feed
+    canvasCap.width = videoElement.videoWidth;
+    canvasCap.height = videoElement.videoHeight;
+    
+    // Flip horizontal to match mirrored preview
+    ctxCap.translate(canvasCap.width, 0);
+    ctxCap.scale(-1, 1);
+    ctxCap.drawImage(videoElement, 0, 0, canvasCap.width, canvasCap.height);
+    
+    const dataUrl = canvasCap.toDataURL('image/jpeg', 0.9);
+    
+    // Push into your existing selection logic
+    if (selectedMetaData.length < MAX_PHOTOS) {
+        selectedMetaData.push({
+            id: "cap_" + Date.now(),
+            thumbnail: dataUrl,
+            isLocal: true,
+            fullData: dataUrl
+        });
+        updateSelectionUI();
+        closeCamera();
+    } else {
+        alert(`Mission limit reached! (Max ${MAX_PHOTOS} photos)`);
+    }
+}
+
+// 3. Stop Stream and Close Modal
+function closeCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+    }
+    cameraModalElement.style.display = 'none';
+    statusEl.innerText = ">> SYSTEM_READY";
+}
 function rate(el) {
     el.parentElement.querySelectorAll("span").forEach(s => s.classList.remove("active"));
     el.classList.add("active");
@@ -958,7 +1087,3 @@ missionForm.onsubmit = async (e) => {
 
 </body>
 </html>
-
-
-
-
