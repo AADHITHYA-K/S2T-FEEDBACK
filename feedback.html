@@ -334,53 +334,78 @@ textarea {
     animation: pulse-status 1s infinite;
     color: var(--electric-yellow);
 }
-/* Ratings */
-
+/* Ratings Container */
 .rate-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
-  margin-top: 8px;
-  background: rgba(15, 23, 42, 0.9);
-  border-radius: 12px;
-  border: 1px solid rgba(55, 65, 81, 0.9);
-  transition: border-color 0.16s ease, background 0.16s ease;
+  padding: 12px 20px;
+  margin-top: 12px;
+  background: rgba(30, 41, 59, 0.7); /* Deep blue-ish glass */
+  backdrop-filter: blur(10px); /* Modern frosted glass effect */
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .rate-row:hover {
-  border-color: rgba(96, 165, 250, 0.9);
+  border-color: #60a5fa;
+  background: rgba(30, 41, 59, 0.9);
+  transform: translateY(-2px); /* Slight lift on hover */
 }
 
+/* Label Styling
 .rate-row span:first-child {
-  font-weight: 500;
-  color: var(--text-light);
-  font-size: 13px;
-}
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #e2e8f0;
+  font-size: 14px;
+  text-transform: uppercase;
+} */
 
+/* Emoji Group */
 .emojis {
   display: flex;
-  gap: 8px;
+  gap: 12px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 30px; /* Pill shape for the emojis */
 }
 
 .emojis span {
   cursor: pointer;
-  opacity: 0.35;
-  font-size: 22px;
-  transition: opacity 0.15s ease, transform 0.12s ease, filter 0.12s ease;
+  opacity: 0.4;
+  font-size: 24px;
+  filter: grayscale(100%); /* Desaturate when inactive */
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy transition */
 }
 
+/* Hover State - "Peek" effect */
 .emojis span:hover {
-  opacity: 0.7;
-  transform: translateY(-1px) scale(1.08);
+  opacity: 0.8;
+  filter: grayscale(0%);
+  transform: scale(1.3) rotate(5deg);
+}
+
+/* Active/Selected State - "Pop" effect */
+.emojis span.active {
+  opacity: 1;
+  filter: grayscale(0%) drop-shadow(0 0 12px rgba(96, 165, 250, 0.6));
+  transform: scale(1.4);
+}
+
+/* Add a subtle "pulse" animation to the active emoji */
+@keyframes active-pulse {
+  0% { transform: scale(1.4); }
+  50% { transform: scale(1.5); }
+  100% { transform: scale(1.4); }
 }
 
 .emojis span.active {
-  opacity: 1;
-  transform: translateY(-1px) scale(1.18);
-  filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.8));
+  animation: active-pulse 2s infinite ease-in-out;
 }
-
 /* Buttons */
 
 .btn {
@@ -564,8 +589,10 @@ canvas {
 </button>
    
 
-        <h2 style="margin-top:30px">YOUR RATINS</h2>
-        <div id="ratingsBody"></div>
+        <h2 style="margin-top:30px">YOUR RATINGS</h2>
+        <div id="ratingsBody">
+          <p font-family="Oswald">🤩 - Excellent | 😊 - Good | 😐 - Fair | 😡 - Poor</p>
+        </div>
 
         <label>BEST PART OF THE EVENT</label>
         <textarea id="best" placeholder="What did you enjoy most?"></textarea>
@@ -591,6 +618,17 @@ canvas {
     <div style="max-width:500px; margin:0 auto 30px;">
         <canvas id="thankYouPreview" width="500" height="625"></canvas>
     </div>
+    <div class="panel" style="max-width:700px;margin:0 auto 20px;">
+  <h2>📸 Instagram Caption</h2>
+  <textarea id="instaCaption"
+    style="width:100%;min-height:180px;font-size:14px;"
+    readonly></textarea>
+
+  <button class="btn" onclick="copyCaption()" style="margin-top:12px;">
+    📋 Copy Caption
+  </button>
+</div>
+
     
     <div class="button-group">
         <button onclick="editForm()" class="btn" style="background:#444;">✏️ Re-Edit</button>
@@ -847,6 +885,49 @@ async function shareMission() {
         }
     }, "image/jpeg", 0.9);
 }
+function generateInstaCaption() {
+  const name = document.getElementById("name").value;
+  const school = document.getElementById("school").value;
+  const grade = document.getElementById("grade").value;
+  const event = document.getElementById("event").value;
+
+  const emojis = {
+    "Junior Scientist": "🔬🚀",
+    "Senior Scientist": "🧪✨",
+    "Photography": "📸🎨",
+    "English Essay Writing": "✍️📖",
+    "Tamil Essay Writing": "✍️📝",
+    "Podcast": "🎙️🔥",
+    "Logo Design": "🎨💡",
+    "SDG Treasure Hunt": "🌍🧩",
+    "Scouts Activities": "⛺🏕️",
+    "Rise Above": "🔥🌟"
+  };
+
+  const energy = emojis[event] || "🚀✨";
+
+  return `
+  Hello Guya!11
+${energy} S2T 2026 – Mission Complete! ${energy}
+I'm thrilled to be participating in ${event} at School Towards Technology(S2T), organized by Sri Sairam Engineering College. It’s not just an event; it’s a platform to learn, innovate, and connect with the brightest minds. 
+"Ready to dive deep into the world of Technology and push my boundaries!"
+
+Big thanks to @sairaminstitutions for hosting such an empowering initiative. Let the journey from S2T begin! ✨
+
+#S2T2026#Innovation#StudentSuccess#TechEvents#LearningJourney
+#SairamInstitutions#SairamEngineeringCollege #SairamEngg 
+#DigitallySairam#TogetherWeCan #SDGgoals #Qualityeducation 
+#DecadeOfDelivery #SairamSDG #SairamRAISE #SairamEOMS 
+#SairamSAP
+`.trim();
+}
+function copyCaption() {
+  const captionBox = document.getElementById("instaCaption");
+  captionBox.select();
+  captionBox.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(captionBox.value);
+  alert("📋 Instagram caption copied!");
+}
 
 missionForm.onsubmit = async (e) => {
     e.preventDefault();
@@ -873,7 +954,7 @@ missionForm.onsubmit = async (e) => {
         ratings: ratings,
         poster: posterData
     };
-
+    document.getElementById("instaCaption").value = generateInstaCaption();
     document.getElementById("thankYouScreen").style.display = "block";
     const tyCanvas = document.getElementById("thankYouPreview");
     tyCanvas.getContext("2d").drawImage(canvas, 0, 0, 500, 625);
