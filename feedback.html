@@ -534,6 +534,7 @@ canvas {
             <option>Podcast</option>
             <option>Scouts Activities</option>
             <option>SDG Treasure Hunt</option>
+            <option>Logo Design</option>
             <option>Rise Above</option>
         </select>
          
@@ -814,15 +815,15 @@ function drawAutoFitText(text, x, y, maxWidth, maxFontSize, minFontSize, fontFam
 
 // --- 4. RATINGS & FORM SUBMISSION ---
 
-["Experience","Venue","Timing","Staff","Food","Learning","Overall"].forEach(m => {
+["Experience","Hospitality","Learning"].forEach(m => {
     document.getElementById("ratingsBody").innerHTML += `
         <div class="rate-row">
             <span>${m}</span>
             <div class="emojis">
-                <span onclick="rate(this)">😡</span>
-                <span onclick="rate(this)">😐</span>
-                <span onclick="rate(this)">😊</span>
                 <span onclick="rate(this)">🤩</span>
+                <span onclick="rate(this)">😊</span>
+                <span onclick="rate(this)">😐</span>
+                <span onclick="rate(this)">😡</span>
             </div>
         </div>`;
 });
@@ -886,5 +887,6 @@ missionForm.onsubmit = async (e) => {
 
 </body>
 </html>
+
 
 
