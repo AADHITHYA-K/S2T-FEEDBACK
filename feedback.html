@@ -324,7 +324,16 @@ textarea {
 .target-hex.selected img {
   opacity: 1;
 }
+@keyframes pulse-status {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
+}
 
+#status.loading {
+    animation: pulse-status 1s infinite;
+    color: var(--electric-yellow);
+}
 /* Ratings */
 
 .rate-row {
@@ -527,7 +536,7 @@ canvas {
             <option>SDG Treasure Hunt</option>
             <option>Rise Above</option>
         </select>
-
+         
         <label>NAME</label>
         <input id="name" required oninput="drawPoster()" placeholder="Enter your name">
 
@@ -543,9 +552,16 @@ canvas {
             <option>11</option>
             <option>12</option>
         </select>
-
         <h2 style="margin-top:30px">SELECT YOUR PHOTO FROM THE LIST</h2>
         <div id="photoGrid" class="photo-grid"></div>
+             <h2 style="margin-top:30px">📸 Selected Targets (<span id="count">0</span>/4)</h2>
+<div id="selectionQueue" class="photo-grid" style="min-height: 100px; border: 2px dashed rgba(50, 245, 160, 0.3); padding: 10px; border-radius: 18px;">
+    </div>
+
+<button type="button" class="btn" id="loadCollageBtn" style="background: var(--science-blue); margin-bottom: 20px;">
+    ⚡ Load & Process Collage
+</button>
+   
 
         <h2 style="margin-top:30px">YOUR RATINS</h2>
         <div id="ratingsBody"></div>
@@ -555,14 +571,13 @@ canvas {
 
         <label>ANY IMPROVEMENTS</label>
         <textarea id="improve" placeholder="How can we make it better?"></textarea>
+        <section class="panel">
+    <h2> Poster Preview</h2>
+    <canvas id="poster" width="1080" height="1350"></canvas>
+</section>
 
         <button class="btn" type="submit">🚀 Generate Poster</button>
     </form>
-</section>
-
-<section class="panel">
-    <h2> Poster Preview</h2>
-    <canvas id="poster" width="1080" height="1350"></canvas>
 </section>
 
 </main>
@@ -593,11 +608,15 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyQaLT_m1EvP8lXbXpNDK_w
 const canvas = document.getElementById("poster");
 const ctx = canvas.getContext("2d");
 const statusEl = document.getElementById("status");
+const missionForm = document.getElementById("missionForm");
+const selectionQueue = document.getElementById("selectionQueue");
+const countEl = document.getElementById("count");
 
 let template = new Image();
 let templateLoaded = false;
-let selectedPhoto = null;
-let previewPhoto = null;
+let selectedMetaData = []; // Stores {id, thumbnail} for the queue
+let highResImages = [];    // Stores the actual high-res Image objects for the canvas
+const MAX_PHOTOS = 4;
 
 const POSTER_W = 1080;
 const POSTER_H = 1350;
@@ -610,108 +629,7 @@ template.onload = () => {
 };
 template.src = "poster-template.png";
 
-function editForm() {
-    document.getElementById("thankYouScreen").style.display = "none";
-    statusEl.innerText = ">> SYSTEM_READY (RE-EDIT_MODE)";
-}
-
-async function shareMission() {
-    const canvas = document.getElementById("poster");
-    canvas.toBlob(async (blob) => {
-        const file = new File([blob], "S2T_Mission_Poster.jpg", { type: "image/jpeg" });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            try {
-                await navigator.share({
-                    files: [file],
-                    title: 'S2T 2026 | Mission Accomplished',
-                    text: 'Check out my Mission Poster from S2T 2026!',
-                });
-            } catch (err) {
-                console.log("Share failed:", err);
-            }
-        } else {
-            alert("Sharing not supported on this browser. Please use the Download button!");
-        }
-    }, "image/jpeg", 0.9);
-}
-
-function drawPoster() {
-    const photoToDraw = selectedPhoto || previewPhoto;
-    if (!templateLoaded) return;
-
-    ctx.clearRect(0, 0, POSTER_W, POSTER_H);
-    ctx.drawImage(template, 0, 0, POSTER_W, POSTER_H);
-
-    if (photoToDraw && photoToDraw.naturalWidth) {
-        const { x, y, w, h } = PHOTO_BOX;
-        ctx.save();
-        
-        ctx.beginPath();
-        const r = 24; 
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + w - r, y);
-        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-        ctx.lineTo(x + w, y + h - r);
-        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        ctx.lineTo(x + r, y + h);
-        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-        ctx.lineTo(x, y + r);
-        ctx.quadraticCurveTo(x, y, x + r, y);
-        ctx.closePath();
-        ctx.clip();
-
-        const scale = Math.max(w / photoToDraw.naturalWidth, h / photoToDraw.naturalHeight);
-        const dw = photoToDraw.naturalWidth * scale;
-        const dh = photoToDraw.naturalHeight * scale;
-
-        ctx.drawImage(photoToDraw, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
-        ctx.restore();
-    } else if (statusEl && statusEl.innerText.includes("OPTIMIZING")) {
-        ctx.fillStyle = "rgba(0, 20, 40, 0.8)";
-        ctx.fillRect(PHOTO_BOX.x, PHOTO_BOX.y, PHOTO_BOX.w, PHOTO_BOX.h);
-        
-        const scanY = PHOTO_BOX.y + (Date.now() % 2000 / 2000) * PHOTO_BOX.h;
-        ctx.strokeStyle = "#06ffa5";
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(PHOTO_BOX.x, scanY);
-        ctx.lineTo(PHOTO_BOX.x + PHOTO_BOX.w, scanY);
-        ctx.stroke();
-
-        ctx.fillStyle = "#06ffa5";
-        ctx.font = "24px 'Oswald'";
-        ctx.textAlign = "center";
-        ctx.fillText("DECRYPTING PIXELS...", PHOTO_BOX.x + PHOTO_BOX.w/2, PHOTO_BOX.y + PHOTO_BOX.h/2);
-        
-        requestAnimationFrame(drawPoster);
-    }
-
-    const schoolVal = document.getElementById("school") ? document.getElementById("school").value : "";
-    drawAutoFitText(
-        (schoolVal || "SCHOOL NAME").toUpperCase(),
-        SCHOOL_BOX.x + SCHOOL_BOX.w / 2,
-        SCHOOL_BOX.y + SCHOOL_BOX.h / 2 + 12, 
-        SCHOOL_BOX.w, 44, 22, "Oswald", "#111827"
-    );
-
-    const nameVal = document.getElementById("name") ? document.getElementById("name").value : "";
-    drawAutoFitText(
-        (nameVal || "AGENT NAME").toUpperCase(),
-        540, 1150, 800, 48, 24, "Oswald", "#111827"
-    );
-}
-
-function drawAutoFitText(text, x, y, maxWidth, maxFontSize, minFontSize, fontFamily, color) {
-    let fontSize = maxFontSize;
-    do {
-        ctx.font = `bold ${fontSize}px ${fontFamily}`;
-        if (ctx.measureText(text).width <= maxWidth) break;
-        fontSize--;
-    } while (fontSize >= minFontSize);
-    ctx.fillStyle = color;
-    ctx.textAlign = "center";
-    ctx.fillText(text, x, y);
-}
+// --- 1. PHOTO SELECTION & QUEUE LOGIC ---
 
 async function fetchDrive(mission) {
     const photoGrid = document.getElementById("photoGrid");
@@ -725,42 +643,176 @@ async function fetchDrive(mission) {
         data.forEach(img => {
             const box = document.createElement("div");
             box.className = "target-hex";
-            const thumbImg = document.createElement("img");
-            thumbImg.src = img.thumbnail; 
-            box.appendChild(thumbImg);
-            
-            box.onclick = async () => {
-                document.querySelectorAll(".target-hex").forEach(x => x.classList.remove("selected"));
-                box.classList.add("selected");
-                
-                const imgObject = new Image();
-                imgObject.crossOrigin = "anonymous"; 
-                statusEl.innerText = ">> OPTIMIZING_RESOLUTION...";
-
-                try {
-                    const response = await fetch(`${API_URL}?base64id=${img.id}`);
-                    let base64Data = await response.text();
-                    base64Data = base64Data.trim().replace(/^"|"$/g, '');
-
-                    imgObject.onload = () => {
-                        selectedPhoto = imgObject; 
-                        previewPhoto = null; 
-                        drawPoster();              
-                        statusEl.innerText = ">> TARGET_READY ✓";
-                    };
-                    
-                    imgObject.src = base64Data;
-                } catch (err) {
-                    statusEl.innerText = ">> SECURITY_ERR";
-                }
-            };
-            
+            box.innerHTML = `<img src="${img.thumbnail}">`;
+            box.onclick = () => toggleSelection(img);
             photoGrid.appendChild(box);
         });
     } catch (err) {
-        photoGrid.innerHTML = "<div style='color:var(--electric-yellow);padding:20px;text-align:center;'>⚠️ CONNECTION OFFLINE</div>";
+        photoGrid.innerHTML = "<div style='color:var(--electric-yellow);padding:20px;'>⚠️ CONNECTION OFFLINE</div>";
     }
 }
+
+function toggleSelection(img) {
+    const index = selectedMetaData.findIndex(p => p.id === img.id);
+    
+    if (index > -1) {
+        // Deselect
+        selectedMetaData.splice(index, 1);
+    } else {
+        // Select
+        if (selectedMetaData.length >= MAX_PHOTOS) {
+            alert(`Maximum of ${MAX_PHOTOS} photos allowed.`);
+            return;
+        }
+        selectedMetaData.push(img);
+    }
+    updateSelectionUI();
+}
+
+function updateSelectionUI() {
+    selectionQueue.innerHTML = "";
+    countEl.innerText = selectedMetaData.length;
+
+    selectedMetaData.forEach(img => {
+        const box = document.createElement("div");
+        box.className = "target-hex selected";
+        box.style.width = "80px"; // Smaller preview for the queue
+        box.innerHTML = `
+            <img src="${img.thumbnail}">
+            <div style="position:absolute; top:-5px; right:-5px; background:#ff4444; color:white; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; cursor:pointer; border:1px solid yellow;">✕</div>
+        `;
+        box.onclick = () => toggleSelection(img);
+        selectionQueue.appendChild(box);
+    });
+}
+document.getElementById("loadCollageBtn").onclick = async () => {
+    if (selectedMetaData.length === 0) {
+        alert("⚠️ Please select at least 1 photo!");
+        return;
+    }
+
+    const btn = document.getElementById("loadCollageBtn");
+    btn.disabled = true; // Prevent double-clicks
+    btn.innerHTML = "⚡ DECRYPTING...";
+    statusEl.innerText = ">> SYNCING TARGETS IN PARALLEL...";
+    
+    highResImages = []; 
+
+    try {
+        // Create an array of fetch requests to run SIMULTANEOUSLY
+        const fetchPromises = selectedMetaData.map(async (meta, index) => {
+            const response = await fetch(`${API_URL}?base64id=${meta.id}`);
+            let base64Data = (await response.text()).trim().replace(/^"|"$/g, '');
+
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.onload = () => {
+                    console.log(`Target ${index + 1} Ready`);
+                    resolve(img);
+                };
+                img.onerror = () => reject(`Failed to load image ${index + 1}`);
+                img.src = base64Data;
+            });
+        });
+
+        // Wait for all 4 images to arrive at once
+        highResImages = await Promise.all(fetchPromises);
+        
+        statusEl.innerText = ">> ALL TARGETS OPTIMIZED ✓";
+        drawPoster();
+    } catch (err) {
+        console.error(err);
+        statusEl.innerText = ">> ERROR: CONNECTION TIMEOUT";
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = "⚡ Load & Process Collage";
+    }
+};
+function drawPoster() {
+    if (!templateLoaded) return;
+
+    ctx.clearRect(0, 0, POSTER_W, POSTER_H);
+    ctx.drawImage(template, 0, 0, POSTER_W, POSTER_H);
+
+    if (highResImages.length > 0) {
+        const { x, y, w, h } = PHOTO_BOX;
+        const count = highResImages.length;
+        
+        ctx.save();
+        // 1. Create a Rounded Mask for the whole collage area
+        ctx.beginPath();
+        const r = 24;
+        ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+        ctx.clip();
+
+        highResImages.forEach((photo, index) => {
+            let dx, dy, dw, dh;
+
+            // 2. Define the exact slot dimensions
+            if (count === 1) { [dx, dy, dw, dh] = [x, y, w, h]; }
+            else if (count === 2) { dw = w / 2; dh = h; dx = x + (index * dw); dy = y; }
+            else if (count === 3) {
+                if (index < 2) { dw = w / 2; dh = h / 2; dx = x + (index * dw); dy = y; }
+                else { dw = w; dh = h / 2; dx = x; dy = y + dh; }
+            } else {
+                dw = w / 2; dh = h / 2; dx = x + (index % 2 * dw);
+                dy = y + (Math.floor(index / 2) * dh);
+            }
+
+            // Inside drawPoster loop:
+const ratio = Math.min(dw / photo.naturalWidth, dh / photo.naturalHeight);
+const imgW = photo.naturalWidth * ratio;
+const imgH = photo.naturalHeight * ratio;
+
+// Center exactly in the slot
+const posX = dx + (dw - imgW) / 2;
+const posY = dy + (dh - imgH) / 2;
+
+ctx.fillStyle = "#020617"; // Match your background color
+ctx.fillRect(dx, dy, dw, dh); // Fill gaps
+ctx.drawImage(photo, posX, posY, imgW, imgH);
+
+            ctx.save();
+            // Optional: Draw a 
+            
+            // 5. Draw divider lines between images
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+            ctx.lineWidth = 4;
+            ctx.strokeRect(dx, dy, dw, dh);
+            ctx.restore();
+        });
+        ctx.restore();
+    }
+
+    // 6. Draw Text Overlays
+    const schoolVal = document.getElementById("school").value || "SCHOOL NAME";
+    drawAutoFitText(schoolVal.toUpperCase(), SCHOOL_BOX.x + SCHOOL_BOX.w / 2, SCHOOL_BOX.y + SCHOOL_BOX.h / 2 + 12, SCHOOL_BOX.w, 44, 22, "Oswald", "#111827");
+
+    const nameVal = document.getElementById("name").value || "AGENT NAME";
+    drawAutoFitText(nameVal.toUpperCase(), 540, 1150, 800, 48, 24, "Oswald", "#111827");
+}
+function drawAutoFitText(text, x, y, maxWidth, maxFontSize, minFontSize, fontFamily, color) {
+    let fontSize = maxFontSize;
+    ctx.textAlign = "center";
+    ctx.fillStyle = color;
+    do {
+        ctx.font = `bold ${fontSize}px ${fontFamily}`;
+        if (ctx.measureText(text).width <= maxWidth) break;
+        fontSize--;
+    } while (fontSize >= minFontSize);
+    ctx.fillText(text, x, y);
+}
+
+// --- 4. RATINGS & FORM SUBMISSION ---
 
 ["Experience","Venue","Timing","Staff","Food","Learning","Overall"].forEach(m => {
     document.getElementById("ratingsBody").innerHTML += `
@@ -780,22 +832,34 @@ function rate(el) {
     el.classList.add("active");
 }
 
+function editForm() {
+    document.getElementById("thankYouScreen").style.display = "none";
+}
+
+async function shareMission() {
+    canvas.toBlob(async (blob) => {
+        const file = new File([blob], "S2T_Poster.jpg", { type: "image/jpeg" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'S2T 2026', text: 'My Mission Poster!' });
+        } else {
+            alert("Sharing not supported. Please Download!");
+        }
+    }, "image/jpeg", 0.9);
+}
+
 missionForm.onsubmit = async (e) => {
     e.preventDefault();
 
-    if (!selectedPhoto) {
-        alert("⚠️ Please wait for HIGH-RES optimization to finish (TARGET_READY) before generating!");
+    if (highResImages.length === 0) {
+        alert("⚠️ Please click 'Load & Process Collage' before generating the final poster!");
         return;
     }
-
-    previewPhoto = null;
-    drawPoster();
 
     const posterData = canvas.toDataURL("image/jpeg", 0.8);
     statusEl.innerText = ">> UPLOADING TO MISSION CONTROL...";
 
     const ratings = Array.from(document.querySelectorAll('.rate-row'))
-        .map(row => `${row.querySelector('span').innerText}: ${row.querySelector('.active').innerText}`)
+        .map(row => `${row.querySelector('span').innerText}: ${row.querySelector('.active')?.innerText || 'N/A'}`)
         .join(' | ');
 
     const payload = {
@@ -810,19 +874,13 @@ missionForm.onsubmit = async (e) => {
     };
 
     document.getElementById("thankYouScreen").style.display = "block";
-    const tyCtx = document.getElementById("thankYouPreview").getContext("2d");
-    tyCtx.drawImage(canvas, 0, 0, 500, 625);
+    const tyCanvas = document.getElementById("thankYouPreview");
+    tyCanvas.getContext("2d").drawImage(canvas, 0, 0, 500, 625);
     document.getElementById("downloadLink").href = posterData;
 
-    fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-    }).then(() => {
-        statusEl.innerText = ">> MISSION_ACCOMPLISHED ✓";
-    }).catch((err) => {
-        console.error("Upload error:", err);
-        statusEl.innerText = ">> UPLOAD_FAILED - RETRY";
-    });
+    fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+        .then(() => statusEl.innerText = ">> MISSION_ACCOMPLISHED ✓")
+        .catch(() => statusEl.innerText = ">> UPLOAD_FAILED");
 };
 </script>
 
