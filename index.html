@@ -303,27 +303,64 @@ body::after {
     align-items: center;
     position: relative;
 }
-
 .hero-planet {
-    position: relative;
-    width: 400px;
-    height: 400px;
+  position: relative;
+  width: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+/* Rotating Earth */
 .hero-earth {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    filter: drop-shadow(0 20px 60px var(--neon-green));
-    animation: rotate360 20s linear infinite;
+  display: block;
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  animation: rotateEarth 25s linear infinite;
 }
 
-@keyframes rotate360 {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+/* The Rectangular Shield */
+.logo-shield-rect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+  /* Rectangle Dimensions */
+  width: 90%; 
+  height: auto;
+  padding: 20px 10px;
+  
+  /* Rectangular shape with slightly rounded corners */
+  border-radius: 12px; 
+  /* Glassmorphism Background */
+  background: rgba(248, 248, 248, 0.8); /* Deep dark background for contrast */
+  backdrop-filter: blur(12px);     /* Blurs the moving globe behind logo */
+  -webkit-backdrop-filter: blur(12px);
+    /* Neon Green/Yellow Border to match your theme */
+  border: 1px solid rgba(50, 245, 160, 0.4);
+  /* Centering the PNG inside */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+  pointer-events: none;
+    /* Shadow to give depth */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
 }
 
-/* Orbital rings around planet */
+/* The Logo Image */
+.hero-logo-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@keyframes rotateEarth {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}/* Orbital rings around planet */
 .hero-planet::before,
 .hero-planet::after {
     content: '';
@@ -827,7 +864,7 @@ body::after {
     <div class="container">
     <div class="hero-inner">
       <div class="hero-left">
-        <img src="assets/s2t.png" alt="SAI TECH S2T Logo" class="s2t-logo">
+        <!-- <img src="assets/s2t.png" alt="SAI TECH S2T Logo" class="s2t-logo"> -->
         <div class="badge">Sri Sairam Engineering College</div>
         <h1 class="hero-title">
           SCHOOL TOWARDS TECHNOLOGY <span>6.0</span>
@@ -851,10 +888,16 @@ body::after {
       </div>
 
       <div class="hero-right">
-        <div class="hero-planet">
-          <img src="image.png" class="hero-earth" alt="Earth">
-        </div>
-      </div>
+          <div class="hero-right">
+  <div class="hero-planet">
+    <img src="image.png" class="hero-earth" alt="Earth">
+    
+    <div class="logo-shield-rect">
+       <img src="assets/s2t.png" class="hero-logo-img" alt="S2T Logo">
+    </div>
+  </div>
+</div>
+</div>
     </div>
   </div>
 </section>
