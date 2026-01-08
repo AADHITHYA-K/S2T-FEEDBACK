@@ -326,37 +326,27 @@ body::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  
-  /* Rectangle Dimensions */
   width: 90%; 
   height: auto;
   padding: 20px 10px;
-  
-  /* Rectangular shape with slightly rounded corners */
+  opacity: 100%;
   border-radius: 12px; 
-  /* Glassmorphism Background */
-  background: rgba(248, 248, 248, 0.8); /* Deep dark background for contrast */
-  backdrop-filter: blur(12px);     /* Blurs the moving globe behind logo */
+  background: rgba(248, 248, 248, 0.8);
+  backdrop-filter: blur(12px); 
   -webkit-backdrop-filter: blur(12px);
-    /* Neon Green/Yellow Border to match your theme */
   border: 1px solid rgba(50, 245, 160, 0.4);
-  /* Centering the PNG inside */
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 5;
   pointer-events: none;
-    /* Shadow to give depth */
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
 }
-
-/* The Logo Image */
 .hero-logo-img {
   width: 100%;
   height: auto;
   display: block;
 }
-
 @keyframes rotateEarth {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
